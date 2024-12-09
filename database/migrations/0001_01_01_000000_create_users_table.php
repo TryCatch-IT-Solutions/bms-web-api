@@ -11,9 +11,15 @@ return new class extends Migration {
   public function up(): void {
     Schema::create('users', function (Blueprint $table) {
       $table->id();
+      $table->foreignId('group_id')->constrained()->cascadeOnUpdate();
+      $table->string('role');
+      $table->string('first_name');
+      $table->string('last_name');
       $table->string('email')->unique();
+      $table->string('phone_number')->unique();
       $table->timestamp('email_verified_at')->nullable();
       $table->string('password');
+      $table->boolean('is_synced')->default(false);
       $table->rememberToken();
       $table->timestamps();
     });
