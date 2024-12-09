@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class AuthController extends Controller {
   public function register(Request $request) {
     $formFields = $request->validate([
-      'email' => 'email|required',
+      'email' => 'email|required|unique:users',
       'password' => 'required'
     ]);
 

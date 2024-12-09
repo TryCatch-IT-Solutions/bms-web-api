@@ -10,4 +10,4 @@ Route::get('/health', function(Request $request) {
   ]);
 });
 
-Route::post('/register', [AuthController::class, 'register'])->name('auth.register')->middleware('guest');
+Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
