@@ -17,4 +17,11 @@ Route::post('/reset-password/{token}', [AuthController::class, 'resetPasswordSav
 
 Route::middleware(['auth:sanctum'])->group(function () {
   Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
+  Route::get('/user', function(Request $request) {
+    return response()->json($request->user());
+  });
+
+  Route::get('/verify-token', function(Request $request) {
+    return response()->json(true);
+  });
 });
