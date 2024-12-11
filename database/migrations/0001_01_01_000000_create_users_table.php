@@ -30,6 +30,7 @@ return new class extends Migration {
       $table->string('province');
       $table->string('password');
       $table->boolean('is_synced')->default(false);
+      $table->string('status')->default('active');
       $table->rememberToken();
       $table->timestamps();
     });
