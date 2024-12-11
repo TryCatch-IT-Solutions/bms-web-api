@@ -9,7 +9,23 @@ use Illuminate\Support\Facades\Hash;
 class AuthController extends Controller {
   public function register(Request $request): array {
     $formFields = $request->validate([
+      'group_id' => 'nullable',
+      'role' => 'required',
+      'first_name' => 'required',
+      'last_name' => 'required',
+      'middle_name' => 'nullable',
       'email' => 'email|required|unique:users',
+      'phone_number' => 'required|unique:users',
+      'birth_date' => 'required',
+      'gender' => 'required',
+      'emergency_contact_name' => 'required',
+      'emergency_contact_no' => 'required',
+      'address1' => 'required',
+      'address2' => 'nullable',
+      'barangay' => 'required',
+      'municipality' => 'required',
+      'zip_code' => 'required',
+      'province' => 'required',
       'password' => 'required'
     ]);
 
