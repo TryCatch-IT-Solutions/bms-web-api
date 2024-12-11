@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller {
   public function register(Request $request): array {
@@ -63,6 +66,43 @@ class AuthController extends Controller {
 
     return [
       'message' => 'You have been successfully logged out.'
+    ];
+  }
+
+  public function forgotPassword(Request $request): array {
+    $request->validate([
+      'email' => 'email|required'
+    ]);
+
+    $status = Password::sendResetLink(
+      $request->only('email')
+    );
+
+    return [
+      'message' => __($status)
+    ];
+  }
+
+  public function resetPasswordSave(Request $request, string $token): array {
+    $request->validate([
+      'password' => 'required',
+    ]);
+
+    $status = Password::reset(
+      array_merge(['token' => $token], $request->only('email', 'password', 'password_confirmation')),
+      function (User $user, string $password) {
+        $user->forceFill([
+          'password' => Hash::make($password)
+        ])->setRememberToken(Str::random(60));
+
+        $user->save();
+
+        event(new PasswordReset($user));
+      }
+    );
+
+    return [
+      'message' => __($status)
     ];
   }
 }
