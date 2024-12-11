@@ -11,7 +11,7 @@ return new class extends Migration {
   public function up(): void {
     Schema::create('users', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('group_id')->constrained()->cascadeOnUpdate();
+      $table->foreignId('group_id')->nullable()->constrained()->cascadeOnUpdate();
       $table->string('role');
       $table->string('first_name');
       $table->string('last_name');
@@ -23,7 +23,7 @@ return new class extends Migration {
       $table->string('emergency_contact_name');
       $table->string('emergency_contact_no');
       $table->string('address1');
-      $table->string('address2');
+      $table->string('address2')->nullable();
       $table->string('barangay');
       $table->string('municipality');
       $table->string('zip_code');
