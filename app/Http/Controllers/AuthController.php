@@ -13,7 +13,7 @@ class AuthController extends Controller {
       'role' => 'required',
       'first_name' => 'required',
       'last_name' => 'required',
-      'middle_name' => 'required',
+      'middle_name' => 'nullable',
       'email' => 'email|required|unique:users',
       'phone_number' => 'required|unique:users',
       'birth_date' => 'required',
