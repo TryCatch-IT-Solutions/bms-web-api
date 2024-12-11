@@ -29,13 +29,10 @@ class AuthController extends Controller {
       'password' => 'required'
     ]);
 
-    $user = User::create($formFields);
-
-    $token = $user->createToken('authToken')->plainTextToken;
+    User::create($formFields);
 
     return [
-      'user' => $user,
-      'token' => $token
+      'message' => 'User successfully registered.'
     ];
   }
 
