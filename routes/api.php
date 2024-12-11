@@ -13,7 +13,7 @@ Route::get('/health', function(Request $request) {
 Route::post('/register', [AuthController::class, 'register'])->name('auth.register');
 Route::post('/login', [AuthController::class, 'login'])->name('auth.login');
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->name('auth.forgot-password');
-Route::post('/reset-password/{token}', [AuthController::class, 'resetPasswordSave'])->name('password.reset');
+Route::post('/reset-password', [AuthController::class, 'resetPasswordSave'])->name('password.reset');
 
 Route::middleware(['auth:sanctum'])->group(function () {
   Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');

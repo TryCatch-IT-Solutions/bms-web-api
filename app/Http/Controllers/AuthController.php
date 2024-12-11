@@ -83,13 +83,13 @@ class AuthController extends Controller {
     ];
   }
 
-  public function resetPasswordSave(Request $request, string $token): array {
+  public function resetPasswordSave(Request $request): array {
     $request->validate([
       'password' => 'required',
     ]);
 
     $status = Password::reset(
-      array_merge(['token' => $token], $request->only('email', 'password', 'password_confirmation')),
+      array_merge($request->only('email', 'password', 'token')),
       function (User $user, string $password) {
         $user->forceFill([
           'password' => Hash::make($password)
