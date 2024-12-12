@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,6 +27,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::get('/user/{user}', [UserController::class, 'show'])->name('user.show');
   Route::post('/user/{user}', [UserController::class, 'update'])->name('user.update');
 
+  Route::get('/devices', [DeviceController::class, 'list'])->name('devices.list');
   Route::get('/verify-token', function(Request $request) {
     return response()->json(true);
   });
