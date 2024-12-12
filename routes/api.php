@@ -28,6 +28,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::post('/user/{user}', [UserController::class, 'update'])->name('user.update');
 
   Route::get('/devices', [DeviceController::class, 'list'])->name('devices.list');
+  Route::post('/devices/delete', [DeviceController::class, 'deleteDevices'])->name('devices.delete');
+
+  Route::get('/device/{device}', [DeviceController::class, 'show'])->name('devices.show');
+  Route::post('/device/{device}', [DeviceController::class, 'edit'])->name('devices.edit');
+
   Route::get('/verify-token', function(Request $request) {
     return response()->json(true);
   });
