@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +27,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::get('/profile', [UserController::class, 'profile'])->name('user.profile');
   Route::get('/user/{user}', [UserController::class, 'show'])->name('user.show');
   Route::post('/user/{user}', [UserController::class, 'update'])->name('user.update');
+
+  Route::get('/devices', [DeviceController::class, 'list'])->name('devices.list');
+  Route::post('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
+  Route::post('/devices/delete', [DeviceController::class, 'deleteDevices'])->name('devices.delete');
+  Route::get('/device/{device}', [DeviceController::class, 'show'])->name('devices.show');
+  Route::post('/device/{device}', [DeviceController::class, 'edit'])->name('devices.edit');
+
+  Route::get('/groups', [GroupController::class, 'list'])->name('groups.list');
+  Route::get('/group/{group}', [GroupController::class, 'show'])->name('groups.deleteGroups');
+  Route::post('/group/{group}', [GroupController::class, 'update'])->name('groups.update');
+  Route::post('/groups/create', [GroupController::class, 'create'])->name('groups.create');
+  Route::post('/groups/delete', [GroupController::class, 'deleteGroups'])->name('groups.deleteGroups');
 
   Route::get('/verify-token', function(Request $request) {
     return response()->json(true);

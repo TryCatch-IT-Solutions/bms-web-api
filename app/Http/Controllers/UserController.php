@@ -75,10 +75,11 @@ class UserController extends Controller {
   /**
    * Delete Users
    */
-  public function deleteUsers(Request $request): JsonResponse {
+  public function deleteUsers(Request $request): JsonResponse
+  {
     $request->validate(['users' => 'array|required']);
 
-    if($request->user()->role !== 'superadmin') {
+    if ($request->user()->role !== 'superadmin') {
       return response()->json('Unauthorized.', 401);
     }
 
@@ -86,7 +87,7 @@ class UserController extends Controller {
       'deleted_at' => Carbon::now(),
     ]);
 
-    if($usersAffected === 0) {
+    if ($usersAffected === 0) {
       return response()->json('No users to delete');
     }
 
@@ -96,10 +97,11 @@ class UserController extends Controller {
   /**
    * Updates a particular user.
    */
-  public function update(Request $request, User $user): JsonResponse {
+  public function update(Request $request, User $user): JsonResponse
+  {
     $extraRules = [];
 
-    if($user->role === 'superadmin') {
+    if ($user->role === 'superadmin') {
       $extraRules = ['role' => 'nullable|in:superadmin,groupadmin,employee'];
     }
 
@@ -108,8 +110,8 @@ class UserController extends Controller {
       'first_name' => 'required',
       'last_name' => 'required',
       'middle_name' => 'nullable',
-      'email' => ['email', 'required', Rule::unique('users')->ignore($user)->withoutTrashed()],
-      'phone_number' => ['numeric', 'required', Rule::unique('users')->ignore($user)->withoutTrashed()],
+      'email' => ['email', 'required', Rule::unique('users')->withoutTrashed()->ignore($user)],
+      'phone_number' => ['numeric', 'required', Rule::unique('users')->withoutTrashed()->ignore($user)],
       'birth_date' => 'required',
       'gender' => 'required',
       'emergency_contact_name' => 'required',

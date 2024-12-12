@@ -5,13 +5,14 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * 
+ *
  *
  * @method static create(array $formFields)
  * @property int $id
@@ -75,6 +76,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereZipCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutTrashed()
+ * @property-read \App\Models\Group|null $group
  * @mixin \Eloquent
  */
 class User extends Authenticatable {
@@ -86,7 +88,7 @@ class User extends Authenticatable {
    *
    * @var array<int, string>
    */
-  protected $guarded = [];
+  protected $guarded = ['id'];
 
   /**
    * The attributes that should be hidden for serialization.
@@ -109,5 +111,9 @@ class User extends Authenticatable {
       'email_verified_at' => 'datetime',
       'password' => 'hashed',
     ];
+  }
+
+  public function group(): BelongsTo {
+    return $this->belongsTo(Group::class);
   }
 }
