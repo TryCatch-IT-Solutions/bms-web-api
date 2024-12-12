@@ -29,6 +29,23 @@ class DeviceController extends Controller {
   }
 
   /**
+   * Adds a new device
+   */
+  public function create(Request $request): JsonResponse {
+    $formFields = $request->validate([
+      'group_id' => 'required|exists:groups,id',
+      'model' => 'required',
+      'serial_no' => 'required',
+      'lat' => 'required',
+      'lon' => 'required'
+    ]);
+
+    Device::create($formFields);
+
+    return response()->json('Device successfully created');
+  }
+
+  /**
    * Delete Devices
    */
   public function deleteDevices(Request $request): JsonResponse {
@@ -38,7 +55,7 @@ class DeviceController extends Controller {
       return response()->json('Unauthorized.', 401);
     }
 
-    $devicesAffected = Device::whereIn('id', $request->get('users'))->whereNull('deleted_at')->update([
+    $devicesAffected = Device::whereIn('id', $request->get('devices'))->whereNull('deleted_at')->update([
       'deleted_at' => Carbon::now(),
     ]);
 

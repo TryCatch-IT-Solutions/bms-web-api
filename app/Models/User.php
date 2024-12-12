@@ -12,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * 
+ *
  *
  * @method static create(array $formFields)
  * @property int $id
@@ -88,7 +88,7 @@ class User extends Authenticatable {
    *
    * @var array<int, string>
    */
-  protected $guarded = [];
+  protected $guarded = ['id'];
 
   /**
    * The attributes that should be hidden for serialization.
