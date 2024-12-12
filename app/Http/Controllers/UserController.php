@@ -7,6 +7,8 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Psy\Util\Json;
+use function Symfony\Component\String\s;
 
 class UserController extends Controller {
   /**
@@ -18,13 +20,13 @@ class UserController extends Controller {
     $groupId = $user->group_id ?? null;
 
     $userList = match($role) {
-      'superadmin' => User::paginate(20),
-      'groupadmin' => User::where('group_id', $groupId)->paginate(20),
+      'superadmin' => isset($query) ? $query->paginate($limit) : User::paginate($limit),
+      'groupadmin' => isset($query) ? $query->where('group_id', $groupId)->paginate($limit) : User::where('group_id', $groupId)->paginate($limit),
       default => $user
     };
 
     return response()->json([
-      'data' => $userList->items(),
+      'content' => $userList->items(),
       'meta' => [
         'current_page' => $userList->currentPage(),
         'last_page' => $userList->lastPage(),
