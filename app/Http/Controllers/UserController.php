@@ -119,8 +119,7 @@ class UserController extends Controller {
       'barangay' => 'required',
       'municipality' => 'required',
       'zip_code' => 'required',
-      'province' => 'required',
-      'password' => 'required'
+      'province' => 'required'
     ]));
 
     $user->update($formFields);
