@@ -17,9 +17,27 @@ class UserController extends Controller {
     $role = $user->role;
     $groupId = $user->group_id ?? null;
 
+    $limit = 20;
+    if($request->has('limit')) {
+      $limit = (int) $request->input('limit');
+      if($limit > 100) {
+        $limit = 100;
+      }
+    }
+
+    $query = null;
+
+    if($request->has('roles')) {
+      $query = User::whereIn('role', $request->input('roles'));
+    }
+
+    if($request->has('status')) {
+      $query->whereIn('status', $request->input('status'));
+    }
+
     $userList = match($role) {
-      'superadmin' => User::paginate(20),
-      'groupadmin' => User::where('group_id', $groupId)->paginate(20),
+      'superadmin' => isset($query) ? $query->paginate($limit) : User::paginate($limit),
+      'groupadmin' => isset($query) ? $query->where('group_id', $groupId)->paginate($limit) : User::where('group_id', $groupId)->paginate($limit),
       default => $user
     };
 
