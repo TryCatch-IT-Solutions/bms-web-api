@@ -3,25 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Psy\Util\Json;
-use function Symfony\Component\String\s;
 
 class UserController extends Controller {
-  public function users(Request $request) {
+  /**
+   * Returns the list of users in paginated form (20)
+   */
+  public function users(Request $request): JsonResponse {
     $user = $request->user();
     $role = $user->role;
     $groupId = $user->group_id ?? null;
 
     $userList = match($role) {
-      'superadmin' => User::all(),
-      'groupadmin' => User::where('group_id', $groupId)->get(),
+      'superadmin' => User::paginate(20),
+      'groupadmin' => User::where('group_id', $groupId)->paginate(20),
       default => $user
     };
 
-    return response()->json($userList);
+    return response()->json([
+      'data' => $userList->items(),
+      'meta' => [
+        'current_page' => $userList->currentPage(),
+        'last_page' => $userList->lastPage(),
+        'per_page' => $userList->perPage(),
+        'from' => $userList->firstItem(),
+        'to' => $userList->lastItem(),
+        'total' => $userList->total()
+      ]
+    ]);
   }
 
   /**
@@ -34,7 +46,7 @@ class UserController extends Controller {
   /**
    * Shows a specific user given a user id
    */
-  public function show(Request $request, User $user): JsonResponse {
+  public function show(User $user): JsonResponse {
     if($user->exists) {
       return response()->json($user);
     }
@@ -43,17 +55,43 @@ class UserController extends Controller {
   }
 
   /**
+   * Delete Users
+   */
+  public function deleteUsers(Request $request): JsonResponse {
+    $request->validate(['users' => 'array|required']);
+
+    if($request->user()->role !== 'superadmin') {
+      return response()->json('Unauthorized.', 401);
+    }
+
+    $usersAffected = User::whereIn('id', $request->get('users'))->whereNull('deleted_at')->update([
+      'deleted_at' => Carbon::now(),
+    ]);
+
+    if($usersAffected === 0) {
+      return response()->json('No users to delete');
+    }
+
+    return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully deleted');
+  }
+
+  /**
    * Updates a particular user.
    */
   public function update(Request $request, User $user): JsonResponse {
-    $formFields = $request->validate([
+    $extraRules = [];
+
+    if($user->role === 'superadmin') {
+      $extraRules = ['role' => 'nullable|in:superadmin,groupadmin,employee'];
+    }
+
+    $formFields = $request->validate(array_merge($extraRules, [
       'group_id' => 'nullable',
-      'role' => 'required',
       'first_name' => 'required',
       'last_name' => 'required',
       'middle_name' => 'nullable',
-      'email' => ['email', 'required', Rule::unique('users')->ignore($user)],
-      'phone_number' => ['email', 'required', Rule::unique('users')->ignore($user)],
+      'email' => ['email', 'required', Rule::unique('users')->ignore($user)->withoutTrashed()],
+      'phone_number' => ['numeric', 'required', Rule::unique('users')->ignore($user)->withoutTrashed()],
       'birth_date' => 'required',
       'gender' => 'required',
       'emergency_contact_name' => 'required',
@@ -65,9 +103,9 @@ class UserController extends Controller {
       'zip_code' => 'required',
       'province' => 'required',
       'password' => 'required'
-    ]);
+    ]));
 
-    User::update($formFields);
+    $user->update($formFields);
 
     return response()->json([
       'message' => 'User has been successfully updated.'

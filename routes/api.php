@@ -21,6 +21,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
   // TODO: Apply gate / token abilities for superadmin and groupadmin as necessary.
   Route::get('/users', [UserController::class, 'users'])->name('users');
+  Route::post('/users/delete', [UserController::class, 'deleteUsers'])->name('users.deleteUsers');
   Route::get('/profile', [UserController::class, 'profile'])->name('user.profile');
   Route::get('/user/{user}', [UserController::class, 'show'])->name('user.show');
   Route::post('/user/{user}', [UserController::class, 'update'])->name('user.update');
