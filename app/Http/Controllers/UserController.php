@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -43,17 +44,43 @@ class UserController extends Controller {
   }
 
   /**
+   * Delete Users
+   */
+  public function deleteUsers(Request $request): JsonResponse {
+    $request->validate(['users' => 'array|required']);
+
+    if($request->user()->role !== 'superadmin') {
+      return response()->json('Unauthorized.', 401);
+    }
+
+    $usersAffected = User::whereIn('id', $request->get('users'))->whereNull('deleted_at')->update([
+      'deleted_at' => Carbon::now(),
+    ]);
+
+    if($usersAffected === 0) {
+      return response()->json('No users to delete');
+    }
+
+    return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully deleted');
+  }
+
+  /**
    * Updates a particular user.
    */
   public function update(Request $request, User $user): JsonResponse {
-    $formFields = $request->validate([
+    $extraRules = [];
+
+    if($user->role === 'superadmin') {
+      $extraRules = ['role' => 'nullable|in:superadmin,groupadmin,employee'];
+    }
+
+    $formFields = $request->validate(array_merge($extraRules, [
       'group_id' => 'nullable',
-      'role' => 'required',
       'first_name' => 'required',
       'last_name' => 'required',
       'middle_name' => 'nullable',
-      'email' => ['email', 'required', Rule::unique('users')->ignore($user)],
-      'phone_number' => ['email', 'required', Rule::unique('users')->ignore($user)],
+      'email' => ['email', 'required', Rule::unique('users')->ignore($user)->withoutTrashed()],
+      'phone_number' => ['numeric', 'required', Rule::unique('users')->ignore($user)->withoutTrashed()],
       'birth_date' => 'required',
       'gender' => 'required',
       'emergency_contact_name' => 'required',
@@ -65,9 +92,9 @@ class UserController extends Controller {
       'zip_code' => 'required',
       'province' => 'required',
       'password' => 'required'
-    ]);
+    ]));
 
-    User::update($formFields);
+    $user->update($formFields);
 
     return response()->json([
       'message' => 'User has been successfully updated.'

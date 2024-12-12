@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller {
   public function register(Request $request): array {
@@ -17,8 +18,8 @@ class AuthController extends Controller {
       'first_name' => 'required',
       'last_name' => 'required',
       'middle_name' => 'nullable',
-      'email' => 'email|required|unique:users',
-      'phone_number' => 'required|unique:users',
+      'email' => ['email', 'required', Rule::unique('users')->withoutTrashed()],
+      'phone_number' => ['required', Rule::unique('users')->withoutTrashed()],
       'birth_date' => 'required',
       'gender' => 'required',
       'emergency_contact_name' => 'required',
