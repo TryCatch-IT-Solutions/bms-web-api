@@ -25,10 +25,10 @@ class UserController extends Controller {
       }
     }
 
-    $query = null;
+    $query = User::withTrashed();
 
     if($request->has('roles')) {
-      $query = User::whereIn('role', $request->input('roles'));
+      $query = $query->whereIn('role', $request->input('roles'));
     }
 
     if($request->has('status')) {
@@ -84,6 +84,7 @@ class UserController extends Controller {
     }
 
     $usersAffected = User::whereIn('id', $request->get('users'))->whereNull('deleted_at')->update([
+      'status' => 'inactive',
       'deleted_at' => Carbon::now(),
     ]);
 
