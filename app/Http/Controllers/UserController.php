@@ -7,8 +7,6 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Psy\Util\Json;
-use function Symfony\Component\String\s;
 
 class UserController extends Controller {
   /**
@@ -18,6 +16,24 @@ class UserController extends Controller {
     $user = $request->user();
     $role = $user->role;
     $groupId = $user->group_id ?? null;
+
+    $limit = 20;
+    if($request->has('limit')) {
+      $limit = (int) $request->input('limit');
+      if($limit > 100) {
+        $limit = 100;
+      }
+    }
+
+    $query = null;
+
+    if($request->has('roles')) {
+      $query = User::whereIn('role', $request->input('roles'));
+    }
+
+    if($request->has('status')) {
+      $query->whereIn('status', $request->input('status'));
+    }
 
     $userList = match($role) {
       'superadmin' => isset($query) ? $query->paginate($limit) : User::paginate($limit),
