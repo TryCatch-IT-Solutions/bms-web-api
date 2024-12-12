@@ -88,12 +88,13 @@ class GroupController extends Controller {
    */
   public function show(Request $request, string $groupId): JsonResponse {
     try {
-      $group = Group::with('users')->findOrFail($groupId);
-      dd($group->groupAdmin());
+      $group = Group::with(['devices', 'groupAdmin', 'employees'])->findOrFail($groupId);
     }
     catch(Exception $e) {
-
+      return response()->json($e->getMessage(), $e->getCode());
     }
+
+    return response()->json($group);
   }
 
   /**

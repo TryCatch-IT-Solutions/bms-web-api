@@ -2,37 +2,41 @@
 
 namespace App\Models;
 
+use Eloquent;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
 /**
  *
  *
  * @property int $id
  * @property string $name
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property string|null $deleted_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Device> $devices
+ * @property-read Collection<int, Device> $devices
  * @property-read int|null $devices_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $users
+ * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Group newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Group newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Group query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Group whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Group whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Group whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Group whereName($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Group whereUpdatedAt($value)
- * @mixin \Eloquent
+ * @method static Builder<static>|Group newModelQuery()
+ * @method static Builder<static>|Group newQuery()
+ * @method static Builder<static>|Group query()
+ * @method static Builder<static>|Group whereCreatedAt($value)
+ * @method static Builder<static>|Group whereDeletedAt($value)
+ * @method static Builder<static>|Group whereId($value)
+ * @method static Builder<static>|Group whereName($value)
+ * @method static Builder<static>|Group whereUpdatedAt($value)
+ * @mixin Eloquent
  */
 class Group extends Model {
   protected $guarded = ['id'];
 
-  protected $with = ['devices', 'groupAdmin', 'employees'];
+//  protected $with = ['devices', 'groupAdmin', 'employees'];
+
   /**
    * Retrieve all devices
    */
