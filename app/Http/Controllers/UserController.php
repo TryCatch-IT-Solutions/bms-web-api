@@ -7,22 +7,33 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Psy\Util\Json;
-use function Symfony\Component\String\s;
 
 class UserController extends Controller {
-  public function users(Request $request) {
+  /**
+   * Returns the list of users in paginated form (20)
+   */
+  public function users(Request $request): JsonResponse {
     $user = $request->user();
     $role = $user->role;
     $groupId = $user->group_id ?? null;
 
     $userList = match($role) {
-      'superadmin' => User::all(),
-      'groupadmin' => User::where('group_id', $groupId)->get(),
+      'superadmin' => User::paginate(20),
+      'groupadmin' => User::where('group_id', $groupId)->paginate(20),
       default => $user
     };
 
-    return response()->json($userList);
+    return response()->json([
+      'data' => $userList->items(),
+      'meta' => [
+        'current_page' => $userList->currentPage(),
+        'last_page' => $userList->lastPage(),
+        'per_page' => $userList->perPage(),
+        'from' => $userList->firstItem(),
+        'to' => $userList->lastItem(),
+        'total' => $userList->total()
+      ]
+    ]);
   }
 
   /**
@@ -35,7 +46,7 @@ class UserController extends Controller {
   /**
    * Shows a specific user given a user id
    */
-  public function show(Request $request, User $user): JsonResponse {
+  public function show(User $user): JsonResponse {
     if($user->exists) {
       return response()->json($user);
     }
