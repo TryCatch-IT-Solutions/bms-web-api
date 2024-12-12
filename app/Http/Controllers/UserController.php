@@ -42,7 +42,7 @@ class UserController extends Controller {
     };
 
     return response()->json([
-      'data' => $userList->items(),
+      'content' => $userList->items(),
       'meta' => [
         'current_page' => $userList->currentPage(),
         'last_page' => $userList->lastPage(),
