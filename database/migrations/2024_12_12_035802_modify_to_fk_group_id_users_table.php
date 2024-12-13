@@ -11,7 +11,7 @@ return new class extends Migration {
   public function up(): void
   {
     Schema::table('users', function (Blueprint $table) {
-      $table->foreignId('group_id')->change();
+      $table->foreignId('group_id')->nullable()->change();
     });
   }
 };
