@@ -28,13 +28,19 @@ class UserController extends Controller {
     $query = User::withTrashed();
 
     if($request->has('roles')) {
-      $query = $query->whereIn('role', $request->input('roles'));
+      $query->whereIn('role', $request->input('roles'));
     }
 
     if($request->has('status')) {
       $query->whereIn('status', $request->input('status'));
     }
-
+    
+    if($request->has('available')) {
+      $request->get('available') ?
+        $query->doesntHave('group') :
+        $query->has('group');
+    }
+    
     $userList = match($role) {
       'superadmin' => isset($query) ? $query->paginate($limit) : User::paginate($limit),
       'groupadmin' => isset($query) ? $query->where('group_id', $groupId)->paginate($limit) : User::where('group_id', $groupId)->paginate($limit),
