@@ -6,6 +6,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller {
@@ -55,9 +56,30 @@ class UserController extends Controller {
         'per_page' => $userList->perPage(),
         'from' => $userList->firstItem(),
         'to' => $userList->lastItem(),
-        'total' => $userList->total()
+        'total' => $userList->total(),
       ]
     ]);
+  }
+
+  /**
+   * Returns the users count per role
+   */
+  public function usersCount(Request $request): JsonResponse {
+    if($request->user()->role !== 'superadmin') {
+      return response()->json('Unauthorized', 401);
+    }
+
+    $statusCounts = DB::table('users')
+      ->select('status', DB::raw('COUNT(*) as count'))
+      ->groupBy('status')
+      ->get();
+
+    $response = [];
+    foreach($statusCounts as $statusCount) {
+      $response[$statusCount->status] = $statusCount->count;
+    }
+
+    return response()->json($response);
   }
 
   /**
