@@ -7,22 +7,57 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Psy\Util\Json;
-use function Symfony\Component\String\s;
 
 class UserController extends Controller {
-  public function users(Request $request) {
+  /**
+   * Returns the list of users in paginated form (20)
+   */
+  public function users(Request $request): JsonResponse {
     $user = $request->user();
     $role = $user->role;
     $groupId = $user->group_id ?? null;
 
+    $limit = 20;
+    if($request->has('limit')) {
+      $limit = (int) $request->input('limit');
+      if($limit > 100) {
+        $limit = 100;
+      }
+    }
+
+    $query = User::withTrashed();
+
+    if($request->has('roles')) {
+      $query->whereIn('role', $request->input('roles'));
+    }
+
+    if($request->has('status')) {
+      $query->whereIn('status', $request->input('status'));
+    }
+
+    if($request->has('available')) {
+      $request->get('available') ?
+        $query->doesntHave('group') :
+        $query->has('group');
+    }
+
     $userList = match($role) {
-      'superadmin' => User::all(),
-      'groupadmin' => User::where('group_id', $groupId)->get(),
+      'superadmin' => isset($query) ? $query->paginate($limit) : User::paginate($limit),
+      'groupadmin' => isset($query) ? $query->where('group_id', $groupId)->paginate($limit) : User::where('group_id', $groupId)->paginate($limit),
       default => $user
     };
 
-    return response()->json($userList);
+    return response()->json([
+      'content' => $userList->items(),
+      'meta' => [
+        'current_page' => $userList->currentPage(),
+        'last_page' => $userList->lastPage(),
+        'per_page' => $userList->perPage(),
+        'from' => $userList->firstItem(),
+        'to' => $userList->lastItem(),
+        'total' => $userList->total()
+      ]
+    ]);
   }
 
   /**
@@ -35,7 +70,7 @@ class UserController extends Controller {
   /**
    * Shows a specific user given a user id
    */
-  public function show(Request $request, User $user): JsonResponse {
+  public function show(User $user): JsonResponse {
     if($user->exists) {
       return response()->json($user);
     }
@@ -46,18 +81,20 @@ class UserController extends Controller {
   /**
    * Delete Users
    */
-  public function deleteUsers(Request $request): JsonResponse {
+  public function deleteUsers(Request $request): JsonResponse
+  {
     $request->validate(['users' => 'array|required']);
 
-    if($request->user()->role !== 'superadmin') {
+    if ($request->user()->role !== 'superadmin') {
       return response()->json('Unauthorized.', 401);
     }
 
     $usersAffected = User::whereIn('id', $request->get('users'))->whereNull('deleted_at')->update([
+      'status' => 'inactive',
       'deleted_at' => Carbon::now(),
     ]);
 
-    if($usersAffected === 0) {
+    if ($usersAffected === 0) {
       return response()->json('No users to delete');
     }
 
@@ -67,10 +104,11 @@ class UserController extends Controller {
   /**
    * Updates a particular user.
    */
-  public function update(Request $request, User $user): JsonResponse {
+  public function update(Request $request, User $user): JsonResponse
+  {
     $extraRules = [];
 
-    if($user->role === 'superadmin') {
+    if ($user->role === 'superadmin') {
       $extraRules = ['role' => 'nullable|in:superadmin,groupadmin,employee'];
     }
 
@@ -79,8 +117,8 @@ class UserController extends Controller {
       'first_name' => 'required',
       'last_name' => 'required',
       'middle_name' => 'nullable',
-      'email' => ['email', 'required', Rule::unique('users')->ignore($user)->withoutTrashed()],
-      'phone_number' => ['numeric', 'required', Rule::unique('users')->ignore($user)->withoutTrashed()],
+      'email' => ['email', 'required', Rule::unique('users')->withoutTrashed()->ignore($user)],
+      'phone_number' => ['numeric', 'required', Rule::unique('users')->withoutTrashed()->ignore($user)],
       'birth_date' => 'required',
       'gender' => 'required',
       'emergency_contact_name' => 'required',
@@ -90,8 +128,7 @@ class UserController extends Controller {
       'barangay' => 'required',
       'municipality' => 'required',
       'zip_code' => 'required',
-      'province' => 'required',
-      'password' => 'required'
+      'province' => 'required'
     ]));
 
     $user->update($formFields);
