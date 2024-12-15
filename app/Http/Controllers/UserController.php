@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -94,6 +95,12 @@ class UserController extends Controller {
    */
   public function show(User $user): JsonResponse {
     if($user->exists) {
+      if($user->role === 'employee') {
+        $user = Employee::with('timeEntries')->find($user->id);
+
+        return response()->json($user);
+      }
+
       return response()->json($user);
     }
 
