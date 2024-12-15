@@ -25,6 +25,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::get('/users', [UserController::class, 'users'])->name('users');
   Route::get('/users/count', [UserController::class, 'usersCount'])->name('users.count');
   Route::post('/users/delete', [UserController::class, 'deleteUsers'])->name('users.deleteUsers');
+  Route::post('/users/restore', [UserController::class, 'restoreUsers'])->name('users.restore');
   Route::get('/profile', [UserController::class, 'profile'])->name('user.profile');
   Route::get('/user/{user}', [UserController::class, 'show'])->name('user.show');
   Route::post('/user/{user}', [UserController::class, 'update'])->name('user.update');
@@ -32,6 +33,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::get('/devices', [DeviceController::class, 'list'])->name('devices.list');
   Route::post('/devices/create', [DeviceController::class, 'create'])->name('devices.create');
   Route::post('/devices/delete', [DeviceController::class, 'deleteDevices'])->name('devices.delete');
+  Route::post('/devices/restore', [DeviceController::class, 'restoreDevices'])->name('devices.restore');
   Route::get('/device/{device}', [DeviceController::class, 'show'])->name('devices.show');
   Route::post('/device/{device}', [DeviceController::class, 'edit'])->name('devices.edit');
 
@@ -40,6 +42,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::post('/group/{group}', [GroupController::class, 'update'])->name('groups.update');
   Route::post('/groups/create', [GroupController::class, 'create'])->name('groups.create');
   Route::post('/groups/delete', [GroupController::class, 'deleteGroups'])->name('groups.deleteGroups');
+  Route::post('/groups/restore', [GroupController::class, 'restoreGroups'])->name('groups.restore');
 
   Route::get('/verify-token', function(Request $request) {
     return response()->json(true);
