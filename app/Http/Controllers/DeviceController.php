@@ -16,7 +16,7 @@ class DeviceController extends Controller {
     $devices = Device::withTrashed()->paginate(20);
 
     return response()->json([
-      'data' => $devices->items(),
+      'content' => $devices->items(),
       'meta' => [
         'current_page' => $devices->currentPage(),
         'last_page' => $devices->lastPage(),
