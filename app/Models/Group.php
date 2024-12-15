@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
 /**
@@ -22,17 +23,17 @@ use Illuminate\Support\Carbon;
  * @property-read int|null $devices_count
  * @property-read Collection<int, User> $users
  * @property-read int|null $users_count
- * @method static Builder<static>|Group newModelQuery()
- * @method static Builder<static>|Group newQuery()
- * @method static Builder<static>|Group query()
- * @method static Builder<static>|Group whereCreatedAt($value)
- * @method static Builder<static>|Group whereDeletedAt($value)
- * @method static Builder<static>|Group whereId($value)
- * @method static Builder<static>|Group whereName($value)
- * @method static Builder<static>|Group whereUpdatedAt($value)
- * @mixin Eloquent
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Device newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Device newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Device onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Device query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Device withTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Device withoutTrashed()
+ * @mixin \Eloquent
  */
 class Group extends Model {
+  use SoftDeletes;
+
   protected $guarded = ['id'];
 
 //  protected $with = ['devices', 'groupAdmin', 'employees'];

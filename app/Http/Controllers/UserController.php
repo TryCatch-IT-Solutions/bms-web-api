@@ -35,13 +35,13 @@ class UserController extends Controller {
     if($request->has('status')) {
       $query->whereIn('status', $request->input('status'));
     }
-    
+
     if($request->has('available')) {
       $request->get('available') ?
         $query->doesntHave('group') :
         $query->has('group');
     }
-    
+
     $userList = match($role) {
       'superadmin' => isset($query) ? $query->paginate($limit) : User::paginate($limit),
       'groupadmin' => isset($query) ? $query->where('group_id', $groupId)->paginate($limit) : User::where('group_id', $groupId)->paginate($limit),
@@ -121,6 +121,32 @@ class UserController extends Controller {
     }
 
     return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully deleted');
+  }
+
+  /**
+   * Restore users
+   */
+  public function restoreUsers(Request $request): JsonResponse
+  {
+    $request->validate(['users' => 'array|required']);
+
+    if ($request->user()->role !== 'superadmin') {
+      return response()->json('Unauthorized.', 401);
+    }
+
+    $users = User::onlyTrashed()->whereIn('id', $request->get('users'));
+    $usersAffected = $users->count();
+
+    if(!$users->restore()) {
+      return response()->json('An unknown error has occurred while trying to restore users. Please try again.');
+    }
+
+    if ($usersAffected === 0) {
+      return response()->json('No users to delete');
+    }
+
+    $users->update(['status' => 'active']);
+    return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully restored');
   }
 
   /**

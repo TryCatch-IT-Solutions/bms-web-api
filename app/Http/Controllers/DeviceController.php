@@ -66,4 +66,29 @@ class DeviceController extends Controller {
     return response()->json(($devicesAffected > 1 ? 'Devices' : 'Device') . ' has been successfully deleted');
   }
 
+  /**
+   * Restore devices
+   */
+  public function restoreDevices(Request $request): JsonResponse
+  {
+    $request->validate(['devices' => 'array|required']);
+
+    if ($request->user()->role !== 'superadmin') {
+      return response()->json('Unauthorized.', 401);
+    }
+
+    $devices = Device::onlyTrashed()->whereIn('id', $request->get('devices'));
+    $devicesAffected = $devices->count();
+
+    if(!$devices->restore()) {
+      return response()->json('An unknown error has occurred while trying to restore devices. Please try again.');
+    }
+
+    if ($devicesAffected === 0) {
+      return response()->json('No devices to delete');
+    }
+
+    $devices->update(['status' => 'active']);
+    return response()->json(($devicesAffected > 1 ? 'Devices' : 'Device') . ' has been successfully restored');
+  }
 }
