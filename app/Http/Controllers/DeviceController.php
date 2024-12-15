@@ -33,11 +33,11 @@ class DeviceController extends Controller {
    */
   public function create(Request $request): JsonResponse {
     $formFields = $request->validate([
-      'group_id' => 'required|exists:groups,id',
+      'group_id' => 'nullable|exists:groups,id',
       'model' => 'required',
       'serial_no' => 'required',
-      'lat' => 'required',
-      'lon' => 'required'
+      'lat' => 'nullable',
+      'lon' => 'nullable'
     ]);
 
     Device::create($formFields);
