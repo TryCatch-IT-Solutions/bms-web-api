@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
-use App\Models\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -81,6 +80,32 @@ class GroupController extends Controller {
     }
 
     return response()->json(($groupsAffected > 1 ? 'Groups' : 'Group') . ' has been successfully deleted');
+  }
+
+  /**
+   * Restore groups
+   */
+  public function restoreGroups(Request $request): JsonResponse {
+    $request->validate(['groups' => 'array|required']);
+
+    if($request->user()->role !== 'superadmin') {
+      return response()->json('Unauthorized.', 401);
+    }
+
+    $groups = Group::onlyTrashed()->whereIn('id', $request->get('groups'));
+    $groupsAffected = $groups->count();
+
+    if(!$groups->restore()) {
+      return response()->json([
+        'errors' => 'One or more of the groups is not archived.'
+      ]);
+    }
+
+    if ($groupsAffected === 0) {
+      return response()->json('No groups to delete');
+    }
+
+    return response()->json(($groupsAffected > 1 ? 'Groups' : 'Group') . ' has been successfully restored');
   }
 
   /**
