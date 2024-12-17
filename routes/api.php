@@ -38,11 +38,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
   Route::post('/device/{device}', [DeviceController::class, 'edit'])->name('devices.edit');
 
   Route::get('/groups', [GroupController::class, 'list'])->name('groups.list');
-  Route::get('/group/{group}', [GroupController::class, 'show'])->name('groups.deleteGroups');
-  Route::post('/group/{group}', [GroupController::class, 'update'])->name('groups.update');
   Route::post('/groups/create', [GroupController::class, 'create'])->name('groups.create');
   Route::post('/groups/delete', [GroupController::class, 'deleteGroups'])->name('groups.deleteGroups');
   Route::post('/groups/restore', [GroupController::class, 'restoreGroups'])->name('groups.restore');
+  Route::get('/group/{group}', [GroupController::class, 'show'])->name('groups.deleteGroups');
+  Route::post('/group/{group}', [GroupController::class, 'update'])->name('groups.update');
+  Route::post('/group/{group}/employees/add', [GroupController::class, 'addEmployee'])->name('groups.addEmployee');
+  Route::post('/group/{group}/employees/remove', [GroupController::class, 'removeEmployee'])->name('groups.removeEmployee');
 
   Route::get('/verify-token', function(Request $request) {
     return response()->json(true);

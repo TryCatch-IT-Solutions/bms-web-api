@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Employee;
 use App\Models\Group;
+use App\Models\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class GroupController extends Controller {
   /**
@@ -52,10 +55,23 @@ class GroupController extends Controller {
    */
   public function create(Request $request): JsonResponse {
     $formFields = $request->validate([
-      'name' => 'required'
+      'name' => 'required',
+      'group_admin' => ['required', Rule::notIn(User::where('role', 'groupadmin')->get()->pluck('id')->toArray())],
+      'employees' => ['required', Rule::in(User::where('role', 'employee')->whereNull('group_id')->get()->pluck('id')->toArray())],
     ]);
 
-    Group::create($formFields);
+    $groupId = Group::create($formFields)->id;
+
+    try {
+      User::where('id', $formFields['group_admin'])->update(['group_id' => $groupId, 'role' => 'groupadmin']);
+
+      if($request->has('employees')) {
+        User::whereIn('id', $formFields['employees'])->update(['group_id' => $groupId]);
+      }
+    }
+    catch(Exception $e) {
+      return response()->json(['errors' => [$e->getMessage()]], 400);
+    }
 
     return response()->json('Group has been successfully created');
   }
@@ -128,12 +144,38 @@ class GroupController extends Controller {
   public function update(Request $request, Group $group): JsonResponse {
     $formFields = $request->validate([
       'name' => 'required',
+      'group_admin' => 'required'
     ]);
+
+    if($group->groupAdmin()->id !== $formFields['group_admin']) {
+      User::where('role', 'groupadmin')->where('group_id', $group->id)->update(['role' => 'employee']);
+      User::where('id', $formFields['group_admin'])->where('group_id', $group->id)->update(['role' => 'groupadmin']);
+    }
 
     $group->update($formFields);
 
     return response()->json([
       'message' => 'Group has been successfully updated.'
     ]);
+  }
+
+  public function removeEmployee(Request $request, string $groupId): JsonResponse {
+    $request->validate([
+      'employees' => 'required|array'
+    ]);
+
+    Employee::whereIn('id', $request->post('employees'))->where('group_id', $groupId)->update(['group_id' => null]);
+
+    return response()->json('Employees has been successfully removed');
+  }
+
+  public function addEmployee(Request $request, string $groupId): JsonResponse {
+    $request->validate([
+      'employees' => 'required|array'
+    ]);
+
+    Employee::whereIn('id', $request->post('employees'))->update(['group_id' => $groupId]);
+
+    return response()->json('Employees has been successfully added');
   }
 }
