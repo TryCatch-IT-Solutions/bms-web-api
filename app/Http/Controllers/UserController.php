@@ -74,11 +74,14 @@ class UserController extends Controller {
 
     $statusCounts = DB::table('users')
       ->select('status', DB::raw('COUNT(*) as count'))
-      ->whereNot('id', $request->user()->id)
-      ->whereNot('role', 'employee')
-      ->groupBy('status')
-      ->get();
+      ->whereNot('id', $request->user()->id);
 
+    $statusCounts = match($request->get('page')) {
+      'user' => $statusCounts->whereNot('role', 'employee'),
+      'employee' => $statusCounts->where('role', 'employee')
+    };
+
+    $statusCounts = $statusCounts->groupBy('status')->get();
     $response = [];
     foreach($statusCounts as $statusCount) {
       $response[$statusCount->status] = $statusCount->count;
@@ -122,16 +125,20 @@ class UserController extends Controller {
       return response()->json('Unauthorized.', 401);
     }
 
-    $usersAffected = User::whereIn('id', $request->get('users'))->whereNull('deleted_at')->update([
+    $superDuperAdminInDelete = in_array(1, $request->get('users'));
+
+    $usersAffected = User::whereIn('id', $request->get('users'))->whereNot('id', 1)->whereNull('deleted_at')->update([
       'status' => 'inactive',
       'deleted_at' => Carbon::now(),
     ]);
 
+    $message = 'User ID 1 is immune to deletion. ';
+
     if ($usersAffected === 0) {
-      return response()->json('No users to delete');
+      return response()->json('No users to delete. ' . $superDuperAdminInDelete ? $message : '');
     }
 
-    return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully deleted');
+    return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully deleted. ' . $superDuperAdminInDelete ? $message : '');
   }
 
   /**
