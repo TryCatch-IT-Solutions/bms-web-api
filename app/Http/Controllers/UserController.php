@@ -143,6 +143,7 @@ class UserController extends Controller {
 
     $users = User::onlyTrashed()->whereIn('id', $request->get('users'));
     $usersAffected = $users->count();
+    $users->update(['status' => 'active']);
 
     if(!$users->restore()) {
       return response()->json('An unknown error has occurred while trying to restore users. Please try again.');
@@ -152,7 +153,6 @@ class UserController extends Controller {
       return response()->json('No users to delete');
     }
 
-    $users->update(['status' => 'active']);
     return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully restored');
   }
 
