@@ -127,8 +127,8 @@ class UserController extends Controller {
       ->whereNot('id', $request->user()->id);
 
     $statusCounts = match($request->get('page')) {
-      'user' => $statusCounts->whereNot('role', 'employee'),
-      'employee' => $statusCounts->where('role', 'employee')
+      'employee' => $statusCounts->where('role', 'employee'),
+      default => $statusCounts->whereNot('role', 'employee')
     };
 
     $statusCounts = $statusCounts->groupBy('status')->get();
