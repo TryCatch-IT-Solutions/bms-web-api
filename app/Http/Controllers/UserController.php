@@ -29,6 +29,13 @@ class UserController extends Controller {
 
     $query = User::withTrashed()->whereNot('id', $request->user()->id);
 
+    if($request->has('search')) {
+      $query->where('first_name', 'like', '%' . $request->search . '%')
+        ->orWhere('last_name', 'like', '%' . $request->search . '%')
+        ->orWhere('email', 'like', '%' . $request->search . '%')
+        ->orWhere('phone_number', 'like', '%' . $request->search . '%');
+    }
+
     if($request->has('roles')) {
       $query->whereIn('role', $request->input('roles'));
     }
