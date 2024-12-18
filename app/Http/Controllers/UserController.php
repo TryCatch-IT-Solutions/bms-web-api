@@ -44,10 +44,12 @@ class UserController extends Controller {
     }
 
     $userList = match($role) {
-      'superadmin' => $query->paginate($limit),
-      'groupadmin' => $query->where('group_id', $groupId)->paginate($limit),
+      'superadmin' => $query,
+      'groupadmin' => $query->where('group_id', $groupId),
       default => $user
     };
+
+    $userList = $userList->orderByDesc('id')->paginate($limit);
 
     return response()->json([
       'content' => $userList->items(),
