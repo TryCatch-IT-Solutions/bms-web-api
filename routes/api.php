@@ -23,6 +23,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
   // TODO: Apply gate / token abilities for superadmin and groupadmin as necessary.
   Route::get('/users', [UserController::class, 'users'])->name('users');
+  Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
   Route::get('/users/count', [UserController::class, 'usersCount'])->name('users.count');
   Route::post('/users/delete', [UserController::class, 'deleteUsers'])->name('users.deleteUsers');
   Route::post('/users/restore', [UserController::class, 'restoreUsers'])->name('users.restore');
