@@ -27,7 +27,7 @@ class UserController extends Controller {
       }
     }
 
-    $query = User::withTrashed();
+    $query = User::withTrashed()->whereNot('id', $request->user()->id);
 
     if($request->has('roles')) {
       $query->whereIn('role', $request->input('roles'));
@@ -44,10 +44,12 @@ class UserController extends Controller {
     }
 
     $userList = match($role) {
-      'superadmin' => isset($query) ? $query->paginate($limit) : User::paginate($limit),
-      'groupadmin' => isset($query) ? $query->where('group_id', $groupId)->paginate($limit) : User::where('group_id', $groupId)->paginate($limit),
+      'superadmin' => $query,
+      'groupadmin' => $query->where('group_id', $groupId),
       default => $user
     };
+
+    $userList = $userList->orderByDesc('id')->paginate($limit);
 
     return response()->json([
       'content' => $userList->items(),
@@ -72,6 +74,8 @@ class UserController extends Controller {
 
     $statusCounts = DB::table('users')
       ->select('status', DB::raw('COUNT(*) as count'))
+      ->whereNot('id', $request->user()->id)
+      ->whereNot('role', 'employee')
       ->groupBy('status')
       ->get();
 
