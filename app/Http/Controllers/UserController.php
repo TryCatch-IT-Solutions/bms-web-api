@@ -74,6 +74,7 @@ class UserController extends Controller {
 
     $statusCounts = DB::table('users')
       ->select('status', DB::raw('COUNT(*) as count'))
+      ->whereNot('id', $request->user()->id)
       ->whereNot('role', 'employee')
       ->groupBy('status')
       ->get();
