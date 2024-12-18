@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\User;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 class UserController extends Controller {
   /**
@@ -62,6 +64,54 @@ class UserController extends Controller {
         'total' => $userList->total(),
       ]
     ]);
+  }
+
+  /**
+   * Import users
+   */
+  public function import(Request $request) {
+    if(!in_array($request->user()->role, ['superadmin', 'groupadmin'])) {
+      return response()->json('Unauthorized', 401);
+    }
+
+    $request->validate(['file' => ['required', 'mimetypes:text/csv,text/plain,application/csv,text/comma-separated-values,text/anytext,application/octet-stream,application/txt', 'max:12288']]);
+
+    $fileContents = file($request->file('file')->getPathname());
+    $insertPayload = [];
+    foreach($fileContents as $key => $line) {
+      if($key === 0) {
+        continue;
+      }
+
+      $row = str_getcsv($line);
+
+      $insertPayload[] = [
+        'email' => $row[0],
+        'password' => $row[1],
+        'role' => $row[2],
+        'first_name' => $row[3],
+        'last_name' => $row[4],
+        'phone_number' => $row[5],
+        'birth_date' => $row[6],
+        'gender' => $row[7],
+        'emergency_contact_name' => $row[8],
+        'emergency_contact_no' => $row[9],
+        'address1' => $row[10],
+        'barangay' => $row[11],
+        'municipality' => $row[12],
+        'zip_code' => $row[13],
+        'province' => $row[14]
+      ];
+    }
+
+    try {
+      User::insertOrIgnore($insertPayload);
+    }
+    catch(Exception $e) {
+      return response($e->getMessage(), 400);
+    }
+
+    return response()->json('Import successful');
   }
 
   /**
