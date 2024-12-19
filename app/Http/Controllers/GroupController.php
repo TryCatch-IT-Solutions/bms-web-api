@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Device;
 use App\Models\Employee;
 use App\Models\Group;
 use App\Models\User;
@@ -31,11 +32,12 @@ class GroupController extends Controller {
       }
     }
 
+    $query = Group::withCount('devices')->with('groupAdmin');
     if($request->has('status')) {
-      $query = Group::whereIn('status', $request->input('status'));
+      $query = $query->whereIn('status', $request->input('status'));
     }
 
-    $groupList = isset($query) ? $query->paginate($limit) : Group::paginate($limit);
+    $groupList = $query->paginate($limit);
 
     return response()->json([
       'content' => $groupList->items(),
@@ -87,9 +89,15 @@ class GroupController extends Controller {
       return response()->json('Unauthorized.', 401);
     }
 
-    $groupsAffected = Group::whereIn('id', $request->get('groups'))->whereNull('deleted_at')->update([
-      'deleted_at' => Carbon::now(),
-    ]);
+    $groups = Group::with(['employees', 'groupadmin', 'devices'])->whereIn('id', $request->get('groups'))->whereNull('deleted_at')->get();
+    $groupsAffected = 0;
+    foreach($groups as $group) {
+      Device::whereIn('id', $group->devices->pluck('id')->toArray())->update(['group_id' => null]);
+      Employee::whereIn('id', $group->employees->pluck('id')->toArray())->update(['group_id' => null]);
+      User::where('id', $group->groupAdmin->id)->update(['group_id' => null]);
+      $group->update(['deleted_at' => Carbon::now()]);
+      $groupsAffected++;
+    }
 
     if($groupsAffected === 0) {
       return response()->json('No groups to delete');
