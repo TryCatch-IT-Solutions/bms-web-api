@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Device;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +14,29 @@ class DeviceController extends Controller {
       return response()->json('Unauthorized.', 401);
     }
 
-    $devices = Device::withTrashed()->paginate(20);
+    $limit = 20;
+    if($request->has('limit')) {
+      $limit = (int) $request->input('limit');
+      if($limit > 100) {
+        $limit = 100;
+      }
+    }
+
+    $devices = Device::withTrashed();
+
+    if($request->has('search')) {
+      $devices->where('model', 'like', '%' . $request->search . '%')
+        ->orWhere('group_id', 'like', '%' . $request->search . '%')
+        ->orWhere('serial_no', 'like', '%' . $request->search . '%');
+    }
+
+    if($request->has('available')) {
+      $request->get('available') ?
+        $devices->doesntHave('group') :
+        $devices->has('group');
+    }
+
+    $devices = $devices->paginate($limit);
 
     return response()->json([
       'content' => $devices->items(),
