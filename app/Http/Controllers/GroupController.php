@@ -56,8 +56,8 @@ class GroupController extends Controller {
   public function create(Request $request): JsonResponse {
     $formFields = $request->validate([
       'name' => 'required',
-      'group_admin' => ['required', Rule::notIn(User::where('role', 'groupadmin')->get()->pluck('id')->toArray())],
-      'employees' => ['required', Rule::in(User::where('role', 'employee')->whereNull('group_id')->get()->pluck('id')->toArray())],
+      'group_admin' => ['required', Rule::in(User::where('role', 'groupadmin')->whereNull('group_id')->get()->pluck('id')->toArray())],
+      'employees' => ['required', 'array', Rule::in(User::where('role', 'employee')->whereNull('group_id')->get()->pluck('id')->toArray())],
     ]);
 
     $groupId = Group::create($formFields)->id;
@@ -132,7 +132,7 @@ class GroupController extends Controller {
       $group = Group::with(['devices', 'groupAdmin', 'employees'])->findOrFail($groupId);
     }
     catch(Exception $e) {
-      return response()->json($e->getMessage(), $e->getCode());
+      return response()->json($e->getMessage(), 500);
     }
 
     return response()->json($group);
