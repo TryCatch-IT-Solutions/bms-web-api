@@ -195,19 +195,29 @@ class UserController extends Controller {
     }
 
     $superDuperAdminInDelete = in_array(1, $request->get('users'));
+    $groupAdminsWithGroup = array_intersect($request->get('users'), User::where('role', 'groupadmin')->whereNotNull('group_id')->get()->pluck('id')->toArray());
 
-    $usersAffected = User::whereIn('id', $request->get('users'))->whereNot('id', 1)->whereNull('deleted_at')->update([
+    $usersAffected = User::whereIn('id', $request->get('users'))->whereNotIn('id', [1, ...$groupAdminsWithGroup])->whereNull('deleted_at')->update([
       'status' => 'inactive',
       'deleted_at' => Carbon::now(),
     ]);
 
-    $message = 'User ID 1 is immune to deletion. ';
-
-    if ($usersAffected === 0) {
-      return response()->json('No users to delete. ' . $superDuperAdminInDelete ? $message : '');
+    $message = [];
+    if($superDuperAdminInDelete) {
+      $message[] = 'User ID 1 is immune to deletion.';
     }
 
-    return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully deleted. ' . $superDuperAdminInDelete ? $message : '');
+    if(count($groupAdminsWithGroup) > 0) {
+      $message[] = 'Group admins with groups CANNOT be deleted, found ' . count($groupAdminsWithGroup);
+    }
+
+    $message = implode(' ', $message);
+
+    if ($usersAffected === 0) {
+      return response()->json('No users to delete. ' . $message);
+    }
+
+    return response()->json(($usersAffected > 1 ? 'Users' : 'User') . ' has been successfully deleted. ' . $message);
   }
 
   /**
