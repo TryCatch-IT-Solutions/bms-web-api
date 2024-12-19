@@ -157,18 +157,30 @@ class UserController extends Controller {
   /**
    * Shows a specific user given a user id
    */
-  public function show(User $user): JsonResponse {
-    if($user->exists) {
-      if($user->role === 'employee') {
-        $user = Employee::with('timeEntries')->find($user->id);
+  public function show(string $userId): JsonResponse {
+    try {
+      $user = User::where('id', $userId)->get()->first();
+      if ($user->exists) {
+        if ($user->role === 'employee') {
+          $user = Employee::where('id', $userId)->get()->first();
+
+          $timeEntriesByDate = $user->timeEntries->groupBy(function ($timeEntry) {
+            return Carbon::parse($timeEntry->datetime)->format('Y-m-d');
+          });
+          $user = json_decode($user->toJson(), true);
+          $user['time_entries'] = $timeEntriesByDate;
+
+          return response()->json($user);
+        }
 
         return response()->json($user);
       }
-
-      return response()->json($user);
+    }
+    catch(Exception $e) {
+      return response()->json(['errors' => 'User not found.'], 404);
     }
 
-    return response()->json(['errors' => 'User not found.'], 404);
+    return response()->json(['errors' => 'An unknown error has occurred. Please try again.'], 500);
   }
 
   /**
