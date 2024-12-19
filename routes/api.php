@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\TimeEntryController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPasswordSave'])->na
 Route::middleware(['auth:sanctum'])->group(function () {
   Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
+  Route::get('/time-entries', [TimeEntryController::class, 'index'])->name('time-entries.index');
   // TODO: Apply gate / token abilities for superadmin and groupadmin as necessary.
   Route::get('/users', [UserController::class, 'users'])->name('users');
   Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
