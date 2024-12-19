@@ -26,7 +26,7 @@ class TimeEntryController extends Controller {
     }
 
     $timeEntries = match('groupadmin') {
-      'groupadmin' => TimeEntry::whereHas('employee', function($query) use ($user) {
+      'groupadmin' => TimeEntry::with('employee')->whereHas('employee', function($query) use ($user) {
         return $query->where('group_id', $user->group_id);
       })->paginate($limit),
       default => TimeEntry::paginate($limit)

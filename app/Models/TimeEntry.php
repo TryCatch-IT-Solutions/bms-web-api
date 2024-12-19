@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $user_id
@@ -37,8 +37,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TimeEntry extends Model {
   use HasFactory;
 
-  protected $with = ['employee'];
-
   protected $guarded = ['id'];
 
   protected function casts(): array {
@@ -50,5 +48,4 @@ class TimeEntry extends Model {
   public function employee(): BelongsTo {
     return $this->belongsTo(User::class, 'user_id');
   }
-
 }
