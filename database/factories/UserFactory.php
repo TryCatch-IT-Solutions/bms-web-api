@@ -3,8 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use Faker\Provider\Base as Faker;
 use Faker\Provider\en_PH\Address;
-use Faker\Provider\en_PH\PhoneNumber;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -32,7 +32,7 @@ class UserFactory extends Factory {
     )));
 
     fake()->addProvider(Address::class);
-    fake()->addProvider(PhoneNumber::class);
+    $mobileNumber = Faker::numerify('+63' . fake()->randomElement([81, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99]) . '########');
 
     return [
       'email' => fake()->unique()->safeEmail(),
@@ -40,11 +40,11 @@ class UserFactory extends Factory {
       'role' => $role,
       'first_name' => fake()->firstName(),
       'last_name' => fake()->lastName(),
-      'phone_number' => preg_replace('/\D/', '', fake('en_PH')->mobileNumber()),
+      'phone_number' => $mobileNumber,
       'birth_date' => fake()->date(),
       'gender' => fake()->randomElement(['male', 'female']),
       'emergency_contact_name' => fake('en_PH')->name(),
-      'emergency_contact_no' => fake('en_PH')->mobileNumber(),
+      'emergency_contact_no' => $mobileNumber,
       'address1' => explode(',', fake('en_PH')->address())[0],
       'barangay' => fake('en_PH')->barangay(),
       'province' => fake('en_PH')->province(),
