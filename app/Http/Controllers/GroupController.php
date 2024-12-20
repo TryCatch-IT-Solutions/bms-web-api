@@ -152,7 +152,7 @@ class GroupController extends Controller {
   public function update(Request $request, Group $group): JsonResponse {
     $formFields = $request->validate([
       'name' => 'required',
-      'group_admin' => 'required'
+      'group_admin' => ['required', Rule::notIn(User::where('role', 'groupadmin')->whereNotNull('group_id')->get()->pluck('id')->toArray())]
     ]);
 
     if(!isset($group->groupAdmin) || $group->groupAdmin->id !== $formFields['group_admin']) {
