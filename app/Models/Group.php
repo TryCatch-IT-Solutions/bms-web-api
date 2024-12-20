@@ -36,7 +36,7 @@ class Group extends Model {
 
   protected $guarded = ['id'];
 
-//  protected $with = ['devices', 'groupAdmin', 'employees'];
+  protected $with = ['groupAdmin'];
 
   /**
    * Retrieve all devices

@@ -155,9 +155,9 @@ class GroupController extends Controller {
       'group_admin' => 'required'
     ]);
 
-    if($group->groupAdmin()->id !== $formFields['group_admin']) {
+    if(!isset($group->groupAdmin) || $group->groupAdmin->id !== $formFields['group_admin']) {
       User::where('role', 'groupadmin')->where('group_id', $group->id)->update(['role' => 'employee']);
-      User::where('id', $formFields['group_admin'])->where('group_id', $group->id)->update(['role' => 'groupadmin']);
+      User::where('id', $formFields['group_admin'])->update(['role' => 'groupadmin', 'group_id' => $group->id]);
     }
 
     $group->update($formFields);
