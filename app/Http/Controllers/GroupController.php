@@ -150,9 +150,15 @@ class GroupController extends Controller {
    * Updates a particular group.
    */
   public function update(Request $request, Group $group): JsonResponse {
+    $groupAdmins = User::where('role', 'groupadmin')->whereNotNull('group_id');
+    if(!is_null($group->groupAdmin)) {
+      $groupAdmins->whereNot('id', $group->groupAdmin->id);
+    }
+    $groupAdmins = $groupAdmins->get()->pluck('id')->toArray();
+
     $formFields = $request->validate([
       'name' => 'required',
-      'group_admin' => ['required', Rule::notIn(User::where('role', 'groupadmin')->whereNotNull('group_id')->get()->pluck('id')->toArray())]
+      'group_admin' => ['required', Rule::notIn($groupAdmins)]
     ]);
 
     if(!isset($group->groupAdmin) || $group->groupAdmin->id !== $formFields['group_admin']) {
